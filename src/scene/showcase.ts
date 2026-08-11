@@ -66,25 +66,21 @@ function makeFlashTexture(): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 128;
   const ctx = canvas.getContext("2d")!;
-  // White-hot core falling off through acid green — an energy release rather
-  // than the warm orange of a powder flash.
   const gradient = ctx.createRadialGradient(64, 64, 4, 64, 64, 64);
-  gradient.addColorStop(0, "rgba(255,255,255,1)");
-  gradient.addColorStop(0.22, "rgba(214,255,140,0.95)");
-  gradient.addColorStop(0.58, "rgba(140,255,60,0.4)");
-  gradient.addColorStop(1, "rgba(90,200,30,0)");
+  gradient.addColorStop(0, "rgba(255,255,240,1)");
+  gradient.addColorStop(0.25, "rgba(255,214,140,0.9)");
+  gradient.addColorStop(0.6, "rgba(255,150,60,0.35)");
+  gradient.addColorStop(1, "rgba(255,120,40,0)");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 128, 128);
   return new THREE.CanvasTexture(canvas);
 }
 
-/** A plasma bolt in flight, from the emitter toward whatever it is aimed at. */
-interface Bolt {
+interface Shell {
   mesh: THREE.Mesh;
   velocity: THREE.Vector3;
+  angular: THREE.Vector3;
   life: number;
-  /** Fires when the bolt reaches its target, so impact lands on arrival. */
-  onArrive?: () => void;
 }
 
 interface Puff {
@@ -94,15 +90,14 @@ interface Puff {
   maxLife: number;
 }
 
-/** Ionised vent wisp left behind by a discharge — replaces grey gunsmoke. */
-function makeVentTexture(): THREE.CanvasTexture {
+function makeSmokeTexture(): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 64;
   const ctx = canvas.getContext("2d")!;
   const gradient = ctx.createRadialGradient(32, 32, 4, 32, 32, 32);
-  gradient.addColorStop(0, "rgba(196,255,150,0.5)");
-  gradient.addColorStop(0.6, "rgba(126,206,74,0.2)");
-  gradient.addColorStop(1, "rgba(96,166,54,0)");
+  gradient.addColorStop(0, "rgba(180,180,175,0.55)");
+  gradient.addColorStop(0.6, "rgba(150,150,145,0.22)");
+  gradient.addColorStop(1, "rgba(140,140,135,0)");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 64, 64);
   return new THREE.CanvasTexture(canvas);
@@ -196,15 +191,15 @@ export class Showcase {
   private attachmentFinish: FinishDef = FINISHES[0];
 
   private inspecting = false;
-  private bolts: Bolt[] = [];
-  private boltGeometry = new THREE.CapsuleGeometry(0.032, 0.2, 4, 8);
-  private boltMaterial = new THREE.MeshBasicMaterial({
-    color: ACID,
-    // Un-tonemapped so the bolt stays above the bloom threshold and glows.
-    toneMapped: false,
+  private shells: Shell[] = [];
+  private shellGeometry = new THREE.CylinderGeometry(0.012, 0.012, 0.045, 6);
+  private shellMaterial = new THREE.MeshStandardMaterial({
+    color: 0xb08d3f,
+    metalness: 0.9,
+    roughness: 0.35,
   });
   private puffs: Puff[] = [];
-  private ventTexture = makeVentTexture();
+  private smokeTexture = makeSmokeTexture();
   private targetGroup = new THREE.Group();
   private targetBoard: THREE.Mesh | null = null;
   private targetHoles: THREE.Mesh[] = [];
@@ -260,7 +255,7 @@ export class Showcase {
       }),
     );
     this.muzzleFlash.scale.setScalar(0.001);
-    this.muzzleLight = new THREE.PointLight(0xb6ff4d, 0, 6, 2);
+    this.muzzleLight = new THREE.PointLight(0xffd9a0, 0, 6, 2);
     this.weaponRoot.add(this.muzzleFlash, this.muzzleLight);
 
     this.buildTarget();
@@ -750,32 +745,22 @@ export class Showcase {
     this.scene.add(this.targetGroup);
   }
 
-  /** Where the shot would land on the board, if it lands at all. */
-  private findTargetHit(
-    origin: THREE.Vector3,
-    direction: THREE.Vector3,
-  ): THREE.Vector3 | null {
-    if (!this.targetBoard) return null;
-    this.raycaster.set(origin, direction);
+  private punchTarget(muzzleWorld: THREE.Vector3, direction: THREE.Vector3): void {
+    if (!this.targetBoard) return;
+    this.raycaster.set(muzzleWorld, direction);
     this.raycaster.far = 40;
     const hits = this.raycaster.intersectObject(this.targetBoard, false);
     this.raycaster.far = Infinity;
-    return hits.length > 0 ? hits[0].point.clone() : null;
-  }
-
-  /** Scorch, flash and sway — deferred until the bolt actually arrives. */
-  private applyTargetHit(point: THREE.Vector3): void {
-    const board = this.targetBoard;
-    if (!board) return;
+    if (hits.length === 0) return;
 
     const hole = new THREE.Mesh(this.holeGeometry, this.holeMaterial);
-    const local = board.worldToLocal(point.clone());
+    const local = this.targetBoard.worldToLocal(hits[0].point.clone());
     hole.position.set(local.x, local.y, 0.004);
-    board.add(hole);
+    this.targetBoard.add(hole);
     this.targetHoles.push(hole);
     if (this.targetHoles.length > 40) {
       const oldest = this.targetHoles.shift()!;
-      board.remove(oldest);
+      this.targetBoard.remove(oldest);
     }
 
     // Impact flash + sway.
@@ -787,7 +772,7 @@ export class Showcase {
         transparent: true,
       }),
     );
-    spark.position.copy(point);
+    spark.position.copy(hits[0].point);
     spark.scale.setScalar(0.18);
     this.scene.add(spark);
     this.addTween(
@@ -808,39 +793,37 @@ export class Showcase {
     });
   }
 
-  // --- Bolts and vent wisps --------------------------------------------------
+  // --- Shells and smoke ------------------------------------------------------
 
-  private static readonly BOLT_SPEED = 34;
-
-  private spawnBolt(
-    originWorld: THREE.Vector3,
-    directionWorld: THREE.Vector3,
-    travel: number | null,
-    onArrive?: () => void,
-  ): void {
-    const mesh = new THREE.Mesh(this.boltGeometry, this.boltMaterial);
+  private spawnShell(originWorld: THREE.Vector3, rightWorld: THREE.Vector3): void {
+    const mesh = new THREE.Mesh(this.shellGeometry, this.shellMaterial);
     mesh.position.copy(originWorld);
-    // The capsule runs along +Y, so aim it down the travel direction.
-    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), directionWorld);
+    mesh.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
     this.scene.add(mesh);
-    this.bolts.push({
+    const velocity = rightWorld
+      .clone()
+      .multiplyScalar(1.2 + Math.random() * 0.8)
+      .add(new THREE.Vector3(0, 2.2 + Math.random() * 0.8, 0));
+    this.shells.push({
       mesh,
-      velocity: directionWorld.clone().multiplyScalar(Showcase.BOLT_SPEED),
-      // A bolt that hits something lives exactly long enough to get there.
-      life: travel === null ? 0.8 : travel / Showcase.BOLT_SPEED,
-      onArrive,
+      velocity,
+      angular: new THREE.Vector3(
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 20,
+      ),
+      life: 1.4,
     });
   }
 
-  private spawnVent(originWorld: THREE.Vector3, directionWorld: THREE.Vector3): void {
+  private spawnSmoke(originWorld: THREE.Vector3, directionWorld: THREE.Vector3): void {
     for (let i = 0; i < 3; i++) {
       const sprite = new THREE.Sprite(
         new THREE.SpriteMaterial({
-          map: this.ventTexture,
-          blending: THREE.AdditiveBlending,
+          map: this.smokeTexture,
           depthWrite: false,
           transparent: true,
-          opacity: 0.28,
+          opacity: 0.5,
         }),
       );
       sprite.position
@@ -862,14 +845,17 @@ export class Showcase {
   }
 
   private updateEffects(dt: number): void {
-    for (let i = this.bolts.length - 1; i >= 0; i--) {
-      const bolt = this.bolts[i];
-      bolt.life -= dt;
-      bolt.mesh.position.addScaledVector(bolt.velocity, dt);
-      if (bolt.life <= 0) {
-        this.scene.remove(bolt.mesh);
-        this.bolts.splice(i, 1);
-        bolt.onArrive?.();
+    for (let i = this.shells.length - 1; i >= 0; i--) {
+      const shell = this.shells[i];
+      shell.life -= dt;
+      shell.velocity.y -= 9.8 * dt;
+      shell.mesh.position.addScaledVector(shell.velocity, dt);
+      shell.mesh.rotation.x += shell.angular.x * dt;
+      shell.mesh.rotation.y += shell.angular.y * dt;
+      shell.mesh.rotation.z += shell.angular.z * dt;
+      if (shell.life <= 0 || shell.mesh.position.y < 0.02) {
+        this.scene.remove(shell.mesh);
+        this.shells.splice(i, 1);
       }
     }
     for (let i = this.puffs.length - 1; i >= 0; i--) {
@@ -878,7 +864,7 @@ export class Showcase {
       puff.sprite.position.addScaledVector(puff.velocity, dt);
       puff.sprite.scale.multiplyScalar(1 + dt * 1.6);
       (puff.sprite.material as THREE.SpriteMaterial).opacity =
-        0.28 * Math.max(puff.life / puff.maxLife, 0);
+        0.5 * Math.max(puff.life / puff.maxLife, 0);
       if (puff.life <= 0) {
         this.scene.remove(puff.sprite);
         puff.sprite.material.dispose();
@@ -1014,29 +1000,28 @@ export class Showcase {
         ),
       )
       .normalize();
+    const right = new THREE.Vector3(0, 0, 1).applyQuaternion(worldQuat);
 
-    // The bolt carries the impact with it, so the scorch lands when it arrives
-    // rather than the instant the trigger is pulled.
-    const hit = this.findTargetHit(muzzleWorld, forward);
-    this.spawnBolt(
-      muzzleWorld,
-      forward,
-      hit ? muzzleWorld.distanceTo(hit) : null,
-      hit ? () => this.applyTargetHit(hit) : undefined,
+    const ejectWorld = weapon.localToWorld(
+      new THREE.Vector3(
+        this.weaponBounds.min.x + 0.6 * size.x,
+        this.weaponBounds.min.y + 0.78 * size.y,
+        0,
+      ),
     );
-    this.spawnVent(muzzleWorld, forward);
+    this.spawnShell(ejectWorld, right);
+    this.spawnSmoke(muzzleWorld, forward);
+    this.punchTarget(muzzleWorld, forward);
 
     const heft = def.stats.damage / 100;
-    // Kept well below the old orange values: an un-tonemapped green flash is
-    // far brighter through the bloom pass and washes out the whole stage.
-    const flashSize = 0.18 + heft * 0.24;
+    const flashSize = 0.35 + heft * 0.45;
 
     this.addTween(0.14 + heft * 0.08, (t) => {
       const fade = 1 - easeInOutCubic(t);
       this.muzzleFlash.scale.setScalar(Math.max(flashSize * fade, 0.001));
-      (this.muzzleFlash.material as THREE.SpriteMaterial).opacity = fade * 0.85;
+      (this.muzzleFlash.material as THREE.SpriteMaterial).opacity = fade;
       this.muzzleFlash.material.rotation = t * 0.9;
-      this.muzzleLight.intensity = 14 * fade;
+      this.muzzleLight.intensity = 26 * fade;
     });
 
     // Recoil: kick rearward (+X) with a slight upward pitch, then settle back.
@@ -1078,16 +1063,14 @@ export class Showcase {
     });
     this.envTexture?.dispose();
     this.envTexture = null;
-    this.ventTexture.dispose();
-    this.boltGeometry.dispose();
-    this.boltMaterial.dispose();
+    this.smokeTexture.dispose();
+    this.shellGeometry.dispose();
+    this.shellMaterial.dispose();
     this.holeGeometry.dispose();
     this.holeMaterial.dispose();
     this.gltfCache.clear();
     this.mounted.clear();
     this.attachmentRest.clear();
-    this.bolts.length = 0;
-    this.puffs.length = 0;
     this.tweens.length = 0;
     this.renderer.dispose();
   }
