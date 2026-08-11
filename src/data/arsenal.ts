@@ -121,9 +121,9 @@ export const WEAPONS: WeaponDef[] = [
     displayLength: 1.3,
     stats: { damage: 62, fireRate: 55, range: 40, stability: 58, chargeSpeed: 82 },
     slots: {
-      scope: { u: 0.6, v: 0.86 },
-      barrel: { u: 0.02, v: 0.62 },
-      magazine: { u: 0.7, v: 0.3 },
+      scope: { u: 0.52, v: 0.8 },
+      barrel: { u: 0.06, v: 0.6 },
+      magazine: { u: 0.38, v: 0.46 },
     },
   },
   {
@@ -141,11 +141,11 @@ export const WEAPONS: WeaponDef[] = [
     displayLength: 2.0,
     stats: { damage: 70, fireRate: 72, range: 62, stability: 66, chargeSpeed: 68 },
     slots: {
-      scope: { u: 0.55, v: 0.88 },
-      barrel: { u: 0.02, v: 0.6 },
-      magazine: { u: 0.5, v: 0.26 },
-      grip: { u: 0.3, v: 0.24 },
-      stock: { u: 0.98, v: 0.55 },
+      scope: { u: 0.5, v: 0.7 },
+      barrel: { u: 0.06, v: 0.58 },
+      magazine: { u: 0.48, v: 0.38 },
+      grip: { u: 0.3, v: 0.38 },
+      stock: { u: 0.88, v: 0.5 },
     },
   },
   {
@@ -163,10 +163,10 @@ export const WEAPONS: WeaponDef[] = [
     displayLength: 2.2,
     stats: { damage: 96, fireRate: 30, range: 44, stability: 38, chargeSpeed: 42 },
     slots: {
-      scope: { u: 0.52, v: 0.9, sizeScale: 1.15 },
-      barrel: { u: 0.02, v: 0.55 },
-      magazine: { u: 0.58, v: 0.24 },
-      grip: { u: 0.32, v: 0.22 },
+      scope: { u: 0.5, v: 0.74, sizeScale: 1.15 },
+      barrel: { u: 0.06, v: 0.55 },
+      magazine: { u: 0.55, v: 0.36 },
+      grip: { u: 0.32, v: 0.36 },
     },
     muzzle: { v: 0.52 },
   },
@@ -185,9 +185,9 @@ export const WEAPONS: WeaponDef[] = [
     displayLength: 2.7,
     stats: { damage: 100, fireRate: 12, range: 100, stability: 48, chargeSpeed: 34 },
     slots: {
-      scope: { u: 0.58, v: 0.86, sizeScale: 1.1 },
-      barrel: { u: 0.02, v: 0.58 },
-      stock: { u: 0.98, v: 0.55 },
+      scope: { u: 0.52, v: 0.72, sizeScale: 1.1 },
+      barrel: { u: 0.06, v: 0.56 },
+      stock: { u: 0.9, v: 0.52 },
     },
   },
   {
@@ -205,7 +205,7 @@ export const WEAPONS: WeaponDef[] = [
     displayLength: 1.9,
     stats: { damage: 88, fireRate: 28, range: 22, stability: 44, chargeSpeed: 56 },
     slots: {
-      scope: { u: 0.58, v: 0.88 },
+      scope: { u: 0.5, v: 0.72 },
     },
     muzzle: { v: 0.62 },
   },
