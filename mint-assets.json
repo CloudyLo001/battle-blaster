@@ -1,0 +1,560 @@
+{
+  "registryVersion": 1,
+  "mintProject": {
+    "projectId": "zd7d9nade8mq0rqehdtrg18tth8bm7wf",
+    "name": "First Project"
+  },
+  "assetRoot": "public/assets/mint",
+  "assets": {
+    "attachments": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "asset_pack",
+        "assetId": "th7fsskb3ea67vvm8hpv7cqfq18c1c9f"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "asset_pack_item_glb:vd730pkbrbwesez24haez5dfb18c0x55:0:ks75dye1rkxe9hs6b9b6d6gygx8c1w30": {
+          "artifactId": "asset_pack_item_glb:vd730pkbrbwesez24haez5dfb18c0x55:0:ks75dye1rkxe9hs6b9b6d6gygx8c1w30",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "holo-optic-module-gx8c1w30.glb",
+          "localPath": "public/assets/mint/attachments/asset_pack_item_glb-vd730pkbrbwesez24haez5dfb18c0x55-0-ks75dye1rkxe9hs6b9b6d6gygx8c1w30.glb",
+          "loaderHint": "gltf",
+          "byteSize": 897620,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "asset_pack_item_glb:vd730pkbrbwesez24haez5dfb18c0x55:1:ks73a9cpn966a4qgeatsrzygnd8c01qd": {
+          "artifactId": "asset_pack_item_glb:vd730pkbrbwesez24haez5dfb18c0x55:1:ks73a9cpn966a4qgeatsrzygnd8c01qd",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "emitter-tube-extension-nd8c01qd.glb",
+          "localPath": "public/assets/mint/attachments/asset_pack_item_glb-vd730pkbrbwesez24haez5dfb18c0x55-1-ks73a9cpn966a4qgeatsrzygnd8c01qd.glb",
+          "loaderHint": "gltf",
+          "byteSize": 932904,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "asset_pack_item_glb:vd730pkbrbwesez24haez5dfb18c0x55:2:ks7c7jw5vbhdvptyjdwd7n20y18c1gyg": {
+          "artifactId": "asset_pack_item_glb:vd730pkbrbwesez24haez5dfb18c0x55:2:ks7c7jw5vbhdvptyjdwd7n20y18c1gyg",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "energy-cell-canister-y18c1gyg.glb",
+          "localPath": "public/assets/mint/attachments/asset_pack_item_glb-vd730pkbrbwesez24haez5dfb18c0x55-2-ks7c7jw5vbhdvptyjdwd7n20y18c1gyg.glb",
+          "loaderHint": "gltf",
+          "byteSize": 972576,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "asset_pack_item_glb:vd730pkbrbwesez24haez5dfb18c0x55:3:ks784k64132nxr0qewnedw1ebd8c1c7e": {
+          "artifactId": "asset_pack_item_glb:vd730pkbrbwesez24haez5dfb18c0x55:3:ks784k64132nxr0qewnedw1ebd8c1c7e",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "angled-handle-module-bd8c1c7e.glb",
+          "localPath": "public/assets/mint/attachments/asset_pack_item_glb-vd730pkbrbwesez24haez5dfb18c0x55-3-ks784k64132nxr0qewnedw1ebd8c1c7e.glb",
+          "loaderHint": "gltf",
+          "byteSize": 868532,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "asset_pack_item_glb:vd730pkbrbwesez24haez5dfb18c0x55:4:ks73bp8dmc3vzne0q1sw4j74n98c1p5g": {
+          "artifactId": "asset_pack_item_glb:vd730pkbrbwesez24haez5dfb18c0x55:4:ks73bp8dmc3vzne0q1sw4j74n98c1p5g",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "stabilizer-rest-module-n98c1p5g.glb",
+          "localPath": "public/assets/mint/attachments/asset_pack_item_glb-vd730pkbrbwesez24haez5dfb18c0x55-4-ks73bp8dmc3vzne0q1sw4j74n98c1p5g.glb",
+          "loaderHint": "gltf",
+          "byteSize": 878560,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        }
+      }
+    },
+    "pedestal": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks7dnt9yxbxyyg3ec1fjfw926s8c3br1"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "tactical-armored-display-pedestal-6s8c3br1-original.glb",
+          "localPath": "public/assets/mint/pedestal/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 903004,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "tactical-armored-display-pedestal-6s8c3br1-preview.webp",
+          "localPath": "public/assets/mint/pedestal/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 35910
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/pedestal/preview_image.webp"
+    },
+    "plasma-weapons": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "asset_pack",
+        "assetId": "th7d2y90kgc1yhr16eehyb424d8c8yvv"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "asset_pack_item_glb:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:0:ks73qytpfc8th8qk8s4k9v4h4h8c9ecw": {
+          "artifactId": "asset_pack_item_glb:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:0:ks73qytpfc8th8qk8s4k9v4h4h8c9ecw",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "ionbreaker-service-caster-4h8c9ecw.glb",
+          "localPath": "public/assets/mint/plasma-weapons/asset_pack_item_glb-vd7fm7jh9n4pdmfxcqf3jxeps98c808x-0-ks73qytpfc8th8qk8s4k9v4h4h8c9ecw.glb",
+          "loaderHint": "gltf",
+          "byteSize": 841496,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "asset_pack_item_glb:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:1:ks73mh9z7mw80epz7eb5h5k7hn8c8ztj": {
+          "artifactId": "asset_pack_item_glb:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:1:ks73mh9z7mw80epz7eb5h5k7hn8c8ztj",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "arcwelder-coil-caster-hn8c8ztj.glb",
+          "localPath": "public/assets/mint/plasma-weapons/asset_pack_item_glb-vd7fm7jh9n4pdmfxcqf3jxeps98c808x-1-ks73mh9z7mw80epz7eb5h5k7hn8c8ztj.glb",
+          "loaderHint": "gltf",
+          "byteSize": 1050812,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "asset_pack_item_glb:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:2:ks70rvvck6byad9nzc40525ct58c8w2x": {
+          "artifactId": "asset_pack_item_glb:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:2:ks70rvvck6byad9nzc40525ct58c8w2x",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "slagthrower-heavy-caster-t58c8w2x.glb",
+          "localPath": "public/assets/mint/plasma-weapons/asset_pack_item_glb-vd7fm7jh9n4pdmfxcqf3jxeps98c808x-2-ks70rvvck6byad9nzc40525ct58c8w2x.glb",
+          "loaderHint": "gltf",
+          "byteSize": 916036,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "asset_pack_item_glb:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:3:ks70k5nyancr9w1gch4f0fpnh18c9skz": {
+          "artifactId": "asset_pack_item_glb:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:3:ks70k5nyancr9w1gch4f0fpnh18c9skz",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "longcoil-precision-caster-h18c9skz.glb",
+          "localPath": "public/assets/mint/plasma-weapons/asset_pack_item_glb-vd7fm7jh9n4pdmfxcqf3jxeps98c808x-3-ks70k5nyancr9w1gch4f0fpnh18c9skz.glb",
+          "loaderHint": "gltf",
+          "byteSize": 1025052,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "asset_pack_item_glb:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:4:ks79ewqmetgwkhf1tm4rnzqs2x8c9y9e": {
+          "artifactId": "asset_pack_item_glb:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:4:ks79ewqmetgwkhf1tm4rnzqs2x8c9y9e",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "boilover-dispersion-caster-2x8c9y9e.glb",
+          "localPath": "public/assets/mint/plasma-weapons/asset_pack_item_glb-vd7fm7jh9n4pdmfxcqf3jxeps98c808x-4-ks79ewqmetgwkhf1tm4rnzqs2x8c9y9e.glb",
+          "loaderHint": "gltf",
+          "byteSize": 1170680,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:0": {
+          "artifactId": "preview_image:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:0",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "ionbreaker-service-caster-4d8c8yvv-preview.webp",
+          "localPath": "public/assets/mint/plasma-weapons/preview_image-vd7fm7jh9n4pdmfxcqf3jxeps98c808x-0.webp",
+          "loaderHint": "image",
+          "byteSize": 57404
+        },
+        "preview_image:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:1": {
+          "artifactId": "preview_image:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:1",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "arcwelder-coil-caster-4d8c8yvv-preview.webp",
+          "localPath": "public/assets/mint/plasma-weapons/preview_image-vd7fm7jh9n4pdmfxcqf3jxeps98c808x-1.webp",
+          "loaderHint": "image",
+          "byteSize": 47652
+        },
+        "preview_image:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:2": {
+          "artifactId": "preview_image:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:2",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "slagthrower-heavy-caster-4d8c8yvv-preview.webp",
+          "localPath": "public/assets/mint/plasma-weapons/preview_image-vd7fm7jh9n4pdmfxcqf3jxeps98c808x-2.webp",
+          "loaderHint": "image",
+          "byteSize": 59412
+        },
+        "preview_image:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:3": {
+          "artifactId": "preview_image:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:3",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "longcoil-precision-caster-4d8c8yvv-preview.webp",
+          "localPath": "public/assets/mint/plasma-weapons/preview_image-vd7fm7jh9n4pdmfxcqf3jxeps98c808x-3.webp",
+          "loaderHint": "image",
+          "byteSize": 32856
+        },
+        "preview_image:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:4": {
+          "artifactId": "preview_image:vd7fm7jh9n4pdmfxcqf3jxeps98c808x:4",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "boilover-dispersion-caster-4d8c8yvv-preview.webp",
+          "localPath": "public/assets/mint/plasma-weapons/preview_image-vd7fm7jh9n4pdmfxcqf3jxeps98c808x-4.webp",
+          "loaderHint": "image",
+          "byteSize": 60022
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/plasma-weapons/preview_image-vd7fm7jh9n4pdmfxcqf3jxeps98c808x-0.webp"
+    },
+    "sfx-arcwelder": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "audio",
+        "assetId": "xd7044hbhvz2zp5ecw5zd85v6h8c9h22"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "audio_file": {
+          "artifactId": "audio_file",
+          "role": "audio",
+          "format": "mp3",
+          "contentType": "audio/mpeg",
+          "filename": "Arcwelder-Shot-085b36.mp3",
+          "localPath": "public/assets/mint/sfx-arcwelder/audio_file.mp3",
+          "loaderHint": "audio",
+          "byteSize": 12164,
+          "durationSeconds": 0.7
+        }
+      }
+    },
+    "sfx-boilover": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "audio",
+        "assetId": "xd7cax743ejx124rhq2smjys858c8tv4"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "audio_file": {
+          "artifactId": "audio_file",
+          "role": "audio",
+          "format": "mp3",
+          "contentType": "audio/mpeg",
+          "filename": "Boilover-Shot-5e3d39.mp3",
+          "localPath": "public/assets/mint/sfx-boilover/audio_file.mp3",
+          "loaderHint": "audio",
+          "byteSize": 15090,
+          "durationSeconds": 0.9
+        }
+      }
+    },
+    "sfx-ionbreaker": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "audio",
+        "assetId": "xd7fk8ty6ntn5mtqkk2dphzgks8c8zdm"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "audio_file": {
+          "artifactId": "audio_file",
+          "role": "audio",
+          "format": "mp3",
+          "contentType": "audio/mpeg",
+          "filename": "Ionbreaker-Shot-74cb45.mp3",
+          "localPath": "public/assets/mint/sfx-ionbreaker/audio_file.mp3",
+          "loaderHint": "audio",
+          "byteSize": 10493,
+          "durationSeconds": 0.6
+        }
+      }
+    },
+    "sfx-longcoil": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "audio",
+        "assetId": "xd7axn6g8590sadq8tsw0bxczx8c8cd3"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "audio_file": {
+          "artifactId": "audio_file",
+          "role": "audio",
+          "format": "mp3",
+          "contentType": "audio/mpeg",
+          "filename": "Longcoil-Beam-2f651a.mp3",
+          "localPath": "public/assets/mint/sfx-longcoil/audio_file.mp3",
+          "loaderHint": "audio",
+          "byteSize": 17180,
+          "durationSeconds": 1
+        }
+      }
+    },
+    "sfx-slagthrower": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "audio",
+        "assetId": "xd7es85g9r3ffrhxkdhaz47yy98c87za"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "audio_file": {
+          "artifactId": "audio_file",
+          "role": "audio",
+          "format": "mp3",
+          "contentType": "audio/mpeg",
+          "filename": "Slagthrower-Shot-521caa.mp3",
+          "localPath": "public/assets/mint/sfx-slagthrower/audio_file.mp3",
+          "loaderHint": "audio",
+          "byteSize": 18434,
+          "durationSeconds": 1.1
+        }
+      }
+    }
+  }
+}
