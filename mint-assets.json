@@ -366,7 +366,7 @@
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "audio",
-        "assetId": "xd7044hbhvz2zp5ecw5zd85v6h8c9h22"
+        "assetId": "xd72hh9wtm4e9z9pfbp1rd1s8x8c986s"
       },
       "transform": {
         "position": [
@@ -392,11 +392,11 @@
           "role": "audio",
           "format": "mp3",
           "contentType": "audio/mpeg",
-          "filename": "Arcwelder-Shot-085b36.mp3",
+          "filename": "Arcwelder-Plasma-baa595.mp3",
           "localPath": "public/assets/mint/sfx-arcwelder/audio_file.mp3",
           "loaderHint": "audio",
-          "byteSize": 12164,
-          "durationSeconds": 0.7
+          "byteSize": 8821,
+          "durationSeconds": 0.5
         }
       }
     },
@@ -405,7 +405,7 @@
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "audio",
-        "assetId": "xd7cax743ejx124rhq2smjys858c8tv4"
+        "assetId": "xd7fdevq9v4cq9ewttvwn8d6v58c8kq1"
       },
       "transform": {
         "position": [
@@ -431,11 +431,11 @@
           "role": "audio",
           "format": "mp3",
           "contentType": "audio/mpeg",
-          "filename": "Boilover-Shot-5e3d39.mp3",
+          "filename": "Boilover-Plasma-cfe07a.mp3",
           "localPath": "public/assets/mint/sfx-boilover/audio_file.mp3",
           "loaderHint": "audio",
-          "byteSize": 15090,
-          "durationSeconds": 0.9
+          "byteSize": 13836,
+          "durationSeconds": 0.8
         }
       }
     },
@@ -444,7 +444,7 @@
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "audio",
-        "assetId": "xd7fk8ty6ntn5mtqkk2dphzgks8c8zdm"
+        "assetId": "xd71nbh08ny30537zabx6nqjjn8c9rma"
       },
       "transform": {
         "position": [
@@ -470,11 +470,11 @@
           "role": "audio",
           "format": "mp3",
           "contentType": "audio/mpeg",
-          "filename": "Ionbreaker-Shot-74cb45.mp3",
+          "filename": "Ionbreaker-Plasma-eb7473.mp3",
           "localPath": "public/assets/mint/sfx-ionbreaker/audio_file.mp3",
           "loaderHint": "audio",
-          "byteSize": 10493,
-          "durationSeconds": 0.6
+          "byteSize": 8821,
+          "durationSeconds": 0.5
         }
       }
     },
@@ -483,7 +483,7 @@
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "audio",
-        "assetId": "xd7axn6g8590sadq8tsw0bxczx8c8cd3"
+        "assetId": "xd7569m2xekevfbn70pt05cmkh8c8gjb"
       },
       "transform": {
         "position": [
@@ -509,11 +509,11 @@
           "role": "audio",
           "format": "mp3",
           "contentType": "audio/mpeg",
-          "filename": "Longcoil-Beam-2f651a.mp3",
+          "filename": "Longcoil-Plasma-4dd747.mp3",
           "localPath": "public/assets/mint/sfx-longcoil/audio_file.mp3",
           "loaderHint": "audio",
-          "byteSize": 17180,
-          "durationSeconds": 1
+          "byteSize": 18434,
+          "durationSeconds": 1.1
         }
       }
     },
@@ -522,7 +522,7 @@
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "audio",
-        "assetId": "xd7es85g9r3ffrhxkdhaz47yy98c87za"
+        "assetId": "xd7aczxt27w6g0nyrqvh771s318c86az"
       },
       "transform": {
         "position": [
@@ -548,11 +548,11 @@
           "role": "audio",
           "format": "mp3",
           "contentType": "audio/mpeg",
-          "filename": "Slagthrower-Shot-521caa.mp3",
+          "filename": "Slagthrower-Plasma-740fe1.mp3",
           "localPath": "public/assets/mint/sfx-slagthrower/audio_file.mp3",
           "loaderHint": "audio",
-          "byteSize": 18434,
-          "durationSeconds": 1.1
+          "byteSize": 17180,
+          "durationSeconds": 1
         }
       }
     }
