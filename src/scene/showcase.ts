@@ -729,13 +729,20 @@ export class Showcase {
       const direction = SLOT_DIRECTION[slot];
       const probed =
         SLOT_SEAT_MODE[slot] === "tip"
-          ? this.tipSeat(body, bounds, size, direction)
+          ? this.tipSeat(body, bounds, size, direction, spec)
           : this.surfaceSeat(body, bounds, size, direction, spec);
       this.seats.set(slot, probed ?? this.boxAnchor(spec, bounds, size));
     }
 
-    // fire() wants the emitter mouth whether or not this frame takes a module.
-    this.muzzleSeat = this.tipSeat(body, bounds, size, new THREE.Vector3(-1, 0, 0));
+    // fire() wants the emitter mouth whether or not this frame takes a module,
+    // and it should use the same bore hint the emitter bay does.
+    this.muzzleSeat = this.tipSeat(
+      body,
+      bounds,
+      size,
+      new THREE.Vector3(-1, 0, 0),
+      def.slots.barrel,
+    );
     this.seatsWeaponId = def.id;
   }
 
@@ -777,17 +784,31 @@ export class Showcase {
   }
 
   /**
-   * Centre of the frame's extreme face along X — the emitter mouth at the front,
-   * the back plate at the rear. Read from vertices rather than rays: the face is
-   * the bounding box by definition, and a ray fan misses a small round mouth
-   * between samples.
+   * The end of the frame along X — the emitter mouth at the front, the back of
+   * the receiver at the rear.
+   *
+   * With an authored height, this rays along the axis at that height to find
+   * the real end surface *there*. That matters whenever the extreme face and
+   * the mount are different features: the Ionbreaker's rearmost geometry is the
+   * heel of its grip, and the Slagthrower's muzzle face carries both a bore and
+   * a canister ring with a hollow gap between them, so a whole-face centre
+   * lands on neither.
+   *
+   * Without one, it falls back to the centre of the extreme face, read from
+   * vertices — that face is the bounding box by definition, and a ray fan can
+   * miss a small round mouth between samples.
    */
   private tipSeat(
     body: THREE.Object3D,
     bounds: THREE.Box3,
     size: THREE.Vector3,
     direction: THREE.Vector3,
+    spec?: AnchorSpec,
   ): THREE.Vector3 | null {
+    if (spec?.v !== undefined) {
+      const aimed = this.tipSeatAtHeight(body, bounds, size, direction, spec);
+      if (aimed) return aimed;
+    }
     const forward = direction.x < 0;
     const faceX = forward ? bounds.min.x : bounds.max.x;
     const slab = Showcase.TIP_SLAB * size.x;
@@ -809,6 +830,40 @@ export class Showcase {
     if (face.isEmpty()) return null;
     const centre = face.getCenter(new THREE.Vector3());
     return new THREE.Vector3(faceX, centre.y, centre.z);
+  }
+
+  /**
+   * Rays back along the frame axis at an authored height, to find the end
+   * surface at that height rather than the extreme end of the whole model.
+   * Three rays across the depth, taking the outward-most hit, so one ray
+   * slipping through a gap in the shell cannot decide the seat.
+   */
+  private tipSeatAtHeight(
+    body: THREE.Object3D,
+    bounds: THREE.Box3,
+    size: THREE.Vector3,
+    direction: THREE.Vector3,
+    spec: AnchorSpec,
+  ): THREE.Vector3 | null {
+    const forward = direction.x < 0;
+    const y = bounds.min.y + (spec.v ?? 0.5) * size.y;
+    const z = bounds.min.z + (spec.w ?? 0.5) * size.z;
+    const dz = Showcase.SEAT_PATCH_W * size.z;
+    const startX = forward ? bounds.min.x - size.x : bounds.max.x + size.x;
+    const inward = direction.clone().negate();
+
+    let best: number | null = null;
+    let hits = 0;
+    for (let j = -1; j <= 1; j += 1) {
+      this.probeRay.set(new THREE.Vector3(startX, y, z + j * dz), inward);
+      const found = this.probeRay.intersectObject(body, true);
+      if (found.length === 0) continue;
+      hits += 1;
+      const x = found[0].point.x;
+      if (best === null || (forward ? x < best : x > best)) best = x;
+    }
+    if (hits < 2 || best === null) return null;
+    return new THREE.Vector3(best, y, z);
   }
 
   async mountAttachment(

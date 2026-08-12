@@ -48,10 +48,13 @@ export type StatBlock = Record<StatKey, number>;
  * take that measurement.
  *
  * u — along the frame axis, 0 = emitter end, 1 = rear. Used by scope, magazine
- *     and grip. Ignored by barrel and stock, which seat on the measured end
- *     face of the frame.
+ *     and grip, which measure the surface at that point. Ignored by barrel and
+ *     stock.
  * w — lateral, 0.5 = centred.
- * v — fallback seat height, used only if the surface probe finds nothing.
+ * v — for barrel and stock, the height to aim along the frame axis, needed when
+ *     the extreme end of the model is not the mount (a pistol's rearmost point
+ *     is its grip heel). For the surface slots it is only a fallback, used if
+ *     the probe finds nothing.
  */
 export interface AnchorSpec {
   u?: number;
@@ -125,8 +128,10 @@ export const WEAPONS: WeaponDef[] = [
       barrel: {},
       magazine: { u: 0.38, v: 0.46 },
       // The one frame with no rear brace of its own, so a stabilizer is an
-      // addition here rather than a second copy of a modelled part.
-      stock: {},
+      // addition rather than a second copy of a modelled part. The height is
+      // authored because this frame's rearmost geometry is the heel of its
+      // grip -- the mount is the pin on top of the receiver, further forward.
+      stock: { v: 0.78 },
     },
   },
   {
@@ -167,7 +172,9 @@ export const WEAPONS: WeaponDef[] = [
     stats: { damage: 96, fireRate: 30, range: 44, stability: 38, chargeSpeed: 42 },
     slots: {
       scope: { u: 0.5, v: 0.74 },
-      barrel: {},
+      // The muzzle face carries a bore ring and a canister ring with a hollow
+      // gap between; without this the seat lands in the gap, on neither.
+      barrel: { v: 0.47 },
       // 0.55 sat at the front lip of the grip cut; the flat shelf is behind it.
       magazine: { u: 0.45, v: 0.36 },
       grip: { u: 0.38, v: 0.36 },
@@ -219,9 +226,9 @@ export const ATTACHMENTS: AttachmentDef[] = [
     name: "Holo Scope",
     slot: "scope",
     modelUrl: `${ATTACH_PACK}-0-ks75dye1rkxe9hs6b9b6d6gygx8c1w30.glb`,
-    // Sized against the frames' depth, not their length: at 0.24 this optic was
-    // wider than the Longcoil it sat on.
-    relativeSize: 0.14,
+    // Between the original 0.24, which was wider than the Longcoil it sat on,
+    // and 0.14, which read too small once seated.
+    relativeSize: 0.2,
     modifiers: { range: 18, chargeSpeed: -5 },
     blurb: "Holographic optic. Sharper reach, slower spin-up.",
   },
@@ -230,8 +237,8 @@ export const ATTACHMENTS: AttachmentDef[] = [
     name: "Emitter Extension",
     slot: "barrel",
     modelUrl: `${ATTACH_PACK}-1-ks73a9cpn966a4qgeatsrzygnd8c01qd.glb`,
-    // Was a 0.235-thick sleeve on a 0.055-diameter emitter tube.
-    relativeSize: 0.22,
+    // Was a 0.235-thick sleeve on a 0.055-diameter emitter tube at 0.34.
+    relativeSize: 0.3,
     modifiers: { range: 12, damage: 8, fireRate: -10 },
     blurb: "Longer beam column. Hits harder, cycles slower.",
   },
@@ -240,7 +247,7 @@ export const ATTACHMENTS: AttachmentDef[] = [
     name: "Energy Canister",
     slot: "magazine",
     modelUrl: `${ATTACH_PACK}-2-ks7c7jw5vbhdvptyjdwd7n20y18c1gyg.glb`,
-    relativeSize: 0.2,
+    relativeSize: 0.24,
     modifiers: { fireRate: 15, chargeSpeed: 10, stability: -8 },
     blurb: "Overcharged cell feed. Faster everything, twitchier handling.",
   },
@@ -249,7 +256,7 @@ export const ATTACHMENTS: AttachmentDef[] = [
     name: "Tactical Grip",
     slot: "grip",
     modelUrl: `${ATTACH_PACK}-3-ks784k64132nxr0qewnedw1ebd8c1c7e.glb`,
-    relativeSize: 0.16,
+    relativeSize: 0.2,
     modifiers: { stability: 20, fireRate: -5 },
     blurb: "Angled forward handle. Locks the emitter down.",
   },
@@ -258,7 +265,7 @@ export const ATTACHMENTS: AttachmentDef[] = [
     name: "Stabilizer Stock",
     slot: "stock",
     modelUrl: `${ATTACH_PACK}-4-ks73bp8dmc3vzne0q1sw4j74n98c1p5g.glb`,
-    relativeSize: 0.3,
+    relativeSize: 0.34,
     modifiers: { stability: 15, range: 8, chargeSpeed: -10 },
     blurb: "Finned shoulder rest. Steadier beams at distance.",
   },
