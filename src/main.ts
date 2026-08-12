@@ -123,3 +123,9 @@ import.meta.hot?.dispose(() => {
   audio.dispose();
 });
 
+// Dev-only handle so the anchor overlay and seat data are reachable from the
+// console (`showcase.showHotspots = true`). Stripped from production builds.
+if (import.meta.env.DEV) {
+  (window as unknown as Record<string, unknown>).showcase = showcase;
+}
+

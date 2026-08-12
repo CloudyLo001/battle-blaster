@@ -52,6 +52,42 @@ const SLOT_DIRECTION: Record<SlotType, THREE.Vector3> = {
   stock: new THREE.Vector3(1, 0, 0),
 };
 
+/**
+ * How a slot finds its seat. Face slots sit on a surface somewhere along the
+ * frame and need the surface probed; end slots sit on the extreme face of the
+ * frame, which is the bounding box itself and needs no ray.
+ */
+const SLOT_SEAT_MODE: Record<SlotType, "surface" | "tip"> = {
+  scope: "surface",
+  magazine: "surface",
+  grip: "surface",
+  barrel: "tip",
+  stock: "tip",
+};
+
+/**
+ * Extra rotation applied to a module before it is measured and seated. Every
+ * module in the current pack is authored rail-along-X, which is already correct
+ * for all five slots, so these are identity. This exists so a future module
+ * that is not can be corrected without touching the seating maths.
+ */
+const SLOT_ORIENTATION: Record<SlotType, THREE.Euler> = {
+  scope: new THREE.Euler(),
+  barrel: new THREE.Euler(),
+  magazine: new THREE.Euler(),
+  grip: new THREE.Euler(),
+  stock: new THREE.Euler(),
+};
+
+/** Distance from an object's origin to its AABB face along a unit axis. */
+function supportDistance(box: THREE.Box3, axis: THREE.Vector3): number {
+  return (
+    Math.max(box.min.x * axis.x, box.max.x * axis.x) +
+    Math.max(box.min.y * axis.y, box.max.y * axis.y) +
+    Math.max(box.min.z * axis.z, box.max.z * axis.z)
+  );
+}
+
 function easeOutBack(t: number): number {
   const c1 = 1.70158;
   const c3 = c1 + 1;
@@ -161,9 +197,30 @@ export class Showcase {
   private pedestalGroup = new THREE.Group();
   private weaponRoot = new THREE.Group();
   private weaponGroup: THREE.Group | null = null;
+  /** The frame model itself, excluding mounted modules. Probe target. */
+  private weaponBody: THREE.Object3D | null = null;
   private weaponBounds = new THREE.Box3();
   private mounted = new Map<SlotType, THREE.Group>();
   private currentWeapon: WeaponDef | null = null;
+
+  /**
+   * Measured seat per slot, in weapon-local space — the single source of truth
+   * for placement. Populated once per weapon load.
+   */
+  private seats = new Map<SlotType, THREE.Vector3>();
+  /** Which weapon `seats` describes, so a mid-swap mount can't use stale data. */
+  private seatsWeaponId: string | null = null;
+  /** Emitter mouth centre, weapon-local, measured off the frame at load. */
+  private muzzleSeat: THREE.Vector3 | null = null;
+  /** Local front face of each mounted module, for the muzzle when extended. */
+  private moduleFrontX = new Map<SlotType, number>();
+  /** Placement-only, so picking and target tests can't leak state into it. */
+  private probeRay = new THREE.Raycaster();
+
+  private static readonly SEAT_PATCH_U = 0.03;
+  private static readonly SEAT_PATCH_W = 0.1;
+  private static readonly TIP_SLAB = 0.02;
+  private static readonly SEAT_INSET = 0.05;
 
   private tweens: Tween[] = [];
   private idleTimer = 0;
@@ -464,7 +521,12 @@ export class Showcase {
       const spec = def.slots[slot];
       if (!spec) continue;
       index += 1;
-      const projected = weapon.localToWorld(this.anchorPoint(spec)).project(this.camera);
+      // clone() is load-bearing: localToWorld mutates in place, and the seat
+      // vectors are cached, so handing one over would corrupt the cache every
+      // frame and walk the modules across the screen.
+      const projected = weapon
+        .localToWorld(this.seatFor(slot, spec, def.id).clone())
+        .project(this.camera);
       spots.push({
         slot,
         index,
@@ -595,7 +657,11 @@ export class Showcase {
     const clone = gltf.scene.clone(true);
     const group = this.normalizeLongAxis(clone, def.displayLength);
     this.weaponBounds = new THREE.Box3().setFromObject(group);
+    // Must happen here: the group is still parentless and identity, so probe
+    // hits land in the same space modules are positioned in.
+    this.computeSeats(def, group, this.weaponBounds);
     this.weaponGroup = group;
+    this.moduleFrontX.clear();
     applyFinish(group, this.weaponFinish);
     this.weaponRoot.add(group);
 
@@ -611,14 +677,138 @@ export class Showcase {
     this.onStatus({ kind: "ready" });
   }
 
-  private anchorPoint(spec: AnchorSpec): THREE.Vector3 {
-    const size = this.weaponBounds.getSize(new THREE.Vector3());
-    const min = this.weaponBounds.min;
+  /**
+   * The old bounding-box fraction. Demoted to a fallback for when a probe finds
+   * nothing, so a failed probe is never worse than the previous behaviour.
+   */
+  private boxAnchor(spec: AnchorSpec, bounds: THREE.Box3, size: THREE.Vector3): THREE.Vector3 {
     return new THREE.Vector3(
-      min.x + spec.u * size.x,
-      min.y + spec.v * size.y,
-      min.z + (spec.w ?? 0.5) * size.z,
+      bounds.min.x + (spec.u ?? 0.5) * size.x,
+      bounds.min.y + (spec.v ?? 0.5) * size.y,
+      bounds.min.z + (spec.w ?? 0.5) * size.z,
     );
+  }
+
+  /**
+   * Seat for a slot: measured when the probe succeeded for THIS weapon, and the
+   * authored box fraction otherwise. The id check keeps a mount that races a
+   * weapon swap from seating against the previous frame's measurements.
+   */
+  private seatFor(slot: SlotType, spec: AnchorSpec, weaponId: string): THREE.Vector3 {
+    const measured = this.seatsWeaponId === weaponId ? this.seats.get(slot) : undefined;
+    if (measured) return measured;
+    return this.boxAnchor(spec, this.weaponBounds, this.weaponBounds.getSize(new THREE.Vector3()));
+  }
+
+  /**
+   * Measures where every supported module actually lands on this frame.
+   *
+   * MUST run while `group` is parentless and identity: world space then equals
+   * weapon-local space, so hit points are directly usable as local positions.
+   * Later is wrong twice over — the scale-in animation shrinks the body to
+   * 0.001, and once parented the idle spin rotates every world-space hit.
+   */
+  private computeSeats(def: WeaponDef, group: THREE.Group, bounds: THREE.Box3): void {
+    this.seats.clear();
+    this.seatsWeaponId = null;
+    this.muzzleSeat = null;
+
+    // Captured once, here, while the group holds only the frame. Modules are
+    // added to this same group later, so a positional lookup done any later
+    // would start hitting them instead of the frame.
+    this.weaponBody = group.children[0] ?? null;
+    const body = this.weaponBody;
+    if (!body) return;
+    // Raycaster reads matrixWorld and never refreshes it itself.
+    group.updateMatrixWorld(true);
+
+    const size = bounds.getSize(new THREE.Vector3());
+    for (const slot of SLOT_ORDER) {
+      const spec = def.slots[slot];
+      if (!spec) continue;
+      const direction = SLOT_DIRECTION[slot];
+      const probed =
+        SLOT_SEAT_MODE[slot] === "tip"
+          ? this.tipSeat(body, bounds, size, direction)
+          : this.surfaceSeat(body, bounds, size, direction, spec);
+      this.seats.set(slot, probed ?? this.boxAnchor(spec, bounds, size));
+    }
+
+    // fire() wants the emitter mouth whether or not this frame takes a module.
+    this.muzzleSeat = this.tipSeat(body, bounds, size, new THREE.Vector3(-1, 0, 0));
+    this.seatsWeaponId = def.id;
+  }
+
+  /**
+   * Outward-most surface within a small patch around (u, w). Deliberately
+   * narrow: sampling a module's whole footprint drags the seat onto whatever
+   * else sits under it, like a pistol grip or a trigger guard.
+   */
+  private surfaceSeat(
+    body: THREE.Object3D,
+    bounds: THREE.Box3,
+    size: THREE.Vector3,
+    direction: THREE.Vector3,
+    spec: AnchorSpec,
+  ): THREE.Vector3 | null {
+    const up = direction.y > 0;
+    const x = bounds.min.x + (spec.u ?? 0.5) * size.x;
+    const z = bounds.min.z + (spec.w ?? 0.5) * size.z;
+    const dx = Showcase.SEAT_PATCH_U * size.x;
+    const dz = Showcase.SEAT_PATCH_W * size.z;
+    const startY = up ? bounds.max.y + size.x : bounds.min.y - size.x;
+    const inward = direction.clone().negate();
+
+    let best: number | null = null;
+    let hits = 0;
+    for (let i = -1; i <= 1; i += 1) {
+      for (let j = -1; j <= 1; j += 1) {
+        this.probeRay.set(new THREE.Vector3(x + i * dx, startY, z + j * dz), inward);
+        const found = this.probeRay.intersectObject(body, true);
+        if (found.length === 0) continue;
+        hits += 1;
+        const y = found[0].point.y;
+        if (best === null || (up ? y > best : y < best)) best = y;
+      }
+    }
+    // A single hit through a gap in the shell is not a surface.
+    if (hits < 2 || best === null) return null;
+    return new THREE.Vector3(x, best, z);
+  }
+
+  /**
+   * Centre of the frame's extreme face along X — the emitter mouth at the front,
+   * the back plate at the rear. Read from vertices rather than rays: the face is
+   * the bounding box by definition, and a ray fan misses a small round mouth
+   * between samples.
+   */
+  private tipSeat(
+    body: THREE.Object3D,
+    bounds: THREE.Box3,
+    size: THREE.Vector3,
+    direction: THREE.Vector3,
+  ): THREE.Vector3 | null {
+    const forward = direction.x < 0;
+    const faceX = forward ? bounds.min.x : bounds.max.x;
+    const slab = Showcase.TIP_SLAB * size.x;
+    const face = new THREE.Box3();
+    const vertex = new THREE.Vector3();
+
+    body.updateMatrixWorld(true);
+    body.traverse((child) => {
+      if (!(child instanceof THREE.Mesh)) return;
+      const position = child.geometry.getAttribute("position");
+      if (!position) return;
+      for (let i = 0; i < position.count; i += 1) {
+        vertex.fromBufferAttribute(position, i).applyMatrix4(child.matrixWorld);
+        if (forward ? vertex.x <= faceX + slab : vertex.x >= faceX - slab) {
+          face.expandByPoint(vertex);
+        }
+      }
+    });
+    if (face.isEmpty()) return null;
+    const centre = face.getCenter(new THREE.Vector3());
+    return new THREE.Vector3(faceX, centre.y, centre.z);
   }
 
   async mountAttachment(
@@ -628,6 +818,9 @@ export class Showcase {
   ): Promise<void> {
     const spec = weapon.slots[attachment.slot];
     if (!spec || !this.weaponGroup) return;
+    // loadoutChanged fires independently of showWeapon, so without this a mount
+    // can land against the previous frame's bounds and seats.
+    if (!this.currentWeapon || this.currentWeapon.id !== weapon.id) return;
     const token = this.swapToken;
 
     this.unmountAttachment(attachment.slot, false);
@@ -644,20 +837,29 @@ export class Showcase {
     const length = weapon.displayLength * attachment.relativeSize * (spec.sizeScale ?? 1);
     const group = this.normalizeLongAxis(gltf.scene.clone(true), length);
 
+    // Orientation first: the bounds below must describe the module as it will be
+    // seen, or the extent used to seat it belongs to the wrong axis.
+    group.rotation.copy(SLOT_ORIENTATION[attachment.slot]);
+    group.updateMatrixWorld(true);
+    // Measured before position is set — setFromObject returns parent-space
+    // bounds, so it would otherwise fold the position back in.
     const bounds = new THREE.Box3().setFromObject(group);
-    const size = bounds.getSize(new THREE.Vector3());
+
     const direction = SLOT_DIRECTION[attachment.slot];
-    const anchor = this.anchorPoint(spec);
-    // Shift so the attachment's near face touches the anchor and its body
-    // extends along the slot direction.
-    const halfExtent = new THREE.Vector3(size.x / 2, size.y / 2, size.z / 2);
-    const offset = direction.clone().multiply(halfExtent);
-    group.position.copy(anchor).add(offset);
+    const seat = this.seatFor(attachment.slot, spec, weapon.id);
+    // Support point rather than size/2, so this stays correct if an orientation
+    // ever leaves the content off-centre about its origin.
+    const back = supportDistance(bounds, direction.clone().negate());
+    const span = back + supportDistance(bounds, direction);
+    const inset = Math.min(Showcase.SEAT_INSET * span, 0.02 * weapon.displayLength);
+    group.position.copy(seat).addScaledVector(direction, back - inset);
 
     applyFinish(group, this.attachmentFinish);
     this.weaponGroup.add(group);
     this.mounted.set(attachment.slot, group);
     this.attachmentRest.set(attachment.slot, group.position.clone());
+    // Local front face, so fire() can find the muzzle without world-space bounds.
+    this.moduleFrontX.set(attachment.slot, group.position.x + bounds.min.x);
     // Mounting while exploded should land in the exploded position.
     if (this.exploded) group.position.addScaledVector(direction, 0.25);
 
@@ -677,6 +879,9 @@ export class Showcase {
     if (!group) return;
     this.mounted.delete(slot);
     this.attachmentRest.delete(slot);
+    this.moduleFrontX.delete(slot);
+    // `seats` is deliberately NOT cleared — it belongs to the weapon, not the
+    // mount, and clearing it would make every re-equip fall back to boxAnchor.
     const parent = group.parent;
     if (!parent) return;
     if (!animate) {
@@ -756,11 +961,17 @@ export class Showcase {
     direction: THREE.Vector3,
   ): THREE.Vector3 | null {
     if (!this.targetBoard) return null;
-    this.raycaster.set(origin, direction);
-    this.raycaster.far = 40;
-    const hits = this.raycaster.intersectObject(this.targetBoard, false);
-    this.raycaster.far = Infinity;
-    return hits.length > 0 ? hits[0].point.clone() : null;
+    const previousFar = this.raycaster.far;
+    try {
+      this.raycaster.set(origin, direction);
+      this.raycaster.far = 40;
+      const hits = this.raycaster.intersectObject(this.targetBoard, false);
+      return hits.length > 0 ? hits[0].point.clone() : null;
+    } finally {
+      // Restore rather than assume the default, so a throw can't leave every
+      // later pick silently capped at 40.
+      this.raycaster.far = previousFar;
+    }
   }
 
   /** Scorch, flash and sway — deferred until the bolt actually arrives. */
@@ -982,20 +1193,22 @@ export class Showcase {
     if (now - this.lastShotAt < this.cooldownMs(def)) return;
     this.lastShotAt = now;
 
-    // Muzzle sits at the -X face; a mounted barrel extension moves it forward.
-    const barrel = this.mounted.get("barrel");
-    let muzzleX = this.weaponBounds.min.x;
-    if (barrel) {
-      const barrelBounds = new THREE.Box3().setFromObject(barrel);
-      muzzleX = Math.min(muzzleX, barrelBounds.min.x);
-    }
+    // The emitter mouth, measured off the frame at load. A mounted extension
+    // pushes it forward to the module's own front face — recorded in local
+    // space at mount time, because setFromObject would return world bounds and
+    // the stage idle-spins.
     const size = this.weaponBounds.getSize(new THREE.Vector3());
-    const muzzleV = def.muzzle?.v ?? def.slots.barrel?.v ?? 0.6;
-    const muzzleW = def.muzzle?.w ?? 0.5;
-    const muzzleY = this.weaponBounds.min.y + muzzleV * size.y;
-    const muzzleZ = this.weaponBounds.min.z + muzzleW * size.z;
+    const mouth =
+      this.muzzleSeat ??
+      new THREE.Vector3(
+        this.weaponBounds.min.x,
+        this.weaponBounds.min.y + (def.slots.barrel?.v ?? 0.6) * size.y,
+        this.weaponBounds.min.z + 0.5 * size.z,
+      );
+    const extensionFront = this.moduleFrontX.get("barrel");
+    const muzzleX = extensionFront !== undefined ? Math.min(mouth.x, extensionFront) : mouth.x;
     const muzzleWorld = weapon.localToWorld(
-      new THREE.Vector3(muzzleX - 0.05, muzzleY, muzzleZ),
+      new THREE.Vector3(muzzleX - 0.05, mouth.y, mouth.z),
     );
     const muzzle = this.weaponRoot.worldToLocal(muzzleWorld.clone());
     this.muzzleFlash.position.copy(muzzle);
@@ -1086,6 +1299,8 @@ export class Showcase {
     this.gltfCache.clear();
     this.mounted.clear();
     this.attachmentRest.clear();
+    this.seats.clear();
+    this.moduleFrontX.clear();
     this.bolts.length = 0;
     this.puffs.length = 0;
     this.tweens.length = 0;

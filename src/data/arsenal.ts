@@ -43,13 +43,19 @@ export const SLOT_ORDER: SlotType[] = [
 export type StatBlock = Record<StatKey, number>;
 
 /**
- * Where an attachment mounts, in the weapon's normalized bounding-box space.
- * u runs along the barrel axis (0 = muzzle end, 1 = rear), v is vertical
- * (0 = bottom, 1 = top), w is lateral (0.5 = centered).
+ * Where a module mounts. The seat itself is measured off the frame's real
+ * surface when the weapon loads, so this only says *where along* the frame to
+ * take that measurement.
+ *
+ * u — along the frame axis, 0 = emitter end, 1 = rear. Used by scope, magazine
+ *     and grip. Ignored by barrel and stock, which seat on the measured end
+ *     face of the frame.
+ * w — lateral, 0.5 = centred.
+ * v — fallback seat height, used only if the surface probe finds nothing.
  */
 export interface AnchorSpec {
-  u: number;
-  v: number;
+  u?: number;
+  v?: number;
   w?: number;
   /** Multiplies the attachment's default size for this weapon. */
   sizeScale?: number;
@@ -77,12 +83,6 @@ export interface WeaponDef {
   description: string;
   /** Index-rail footer meta line. */
   meta: string;
-  /**
-   * Emitter position in normalized bounds space. Without it fire() falls back
-   * to the barrel slot, which is wrong when a weapon has no barrel slot or its
-   * emitter does not sit at the barrel height.
-   */
-  muzzle?: { v: number; w?: number };
 }
 
 export interface AttachmentDef {
@@ -122,8 +122,11 @@ export const WEAPONS: WeaponDef[] = [
     stats: { damage: 62, fireRate: 55, range: 40, stability: 58, chargeSpeed: 82 },
     slots: {
       scope: { u: 0.52, v: 0.8 },
-      barrel: { u: 0.06, v: 0.6 },
+      barrel: {},
       magazine: { u: 0.38, v: 0.46 },
+      // The one frame with no rear brace of its own, so a stabilizer is an
+      // addition here rather than a second copy of a modelled part.
+      stock: {},
     },
   },
   {
@@ -134,18 +137,18 @@ export const WEAPONS: WeaponDef[] = [
     edition: "Edition 180",
     className: "Carbine",
     description:
-      "Twin coil wraps and a downward-socketed cell. The only frame in the line that takes all five module types.",
+      "Twin coil wraps and a downward-socketed cell. The cell and stock are part of the frame, so it takes an optic, an emitter and a grip.",
     meta: "Mint asset pack · item 02 of 05",
     modelUrl: `${PLASMA_PACK}-1-ks73mh9z7mw80epz7eb5h5k7hn8c8ztj.glb`,
     soundUrl: `${MINT}/sfx-arcwelder/audio_file.mp3`,
     displayLength: 2.0,
     stats: { damage: 70, fireRate: 72, range: 62, stability: 66, chargeSpeed: 68 },
+    // No magazine or stock bay: this frame already models a socketed cell and a
+    // folding wire stock, so those modules would double up on existing parts.
     slots: {
       scope: { u: 0.5, v: 0.7 },
-      barrel: { u: 0.06, v: 0.58 },
-      magazine: { u: 0.48, v: 0.38 },
+      barrel: {},
       grip: { u: 0.3, v: 0.38 },
-      stock: { u: 0.88, v: 0.5 },
     },
   },
   {
@@ -163,12 +166,12 @@ export const WEAPONS: WeaponDef[] = [
     displayLength: 2.2,
     stats: { damage: 96, fireRate: 30, range: 44, stability: 38, chargeSpeed: 42 },
     slots: {
-      scope: { u: 0.5, v: 0.74, sizeScale: 1.15 },
-      barrel: { u: 0.06, v: 0.55 },
-      magazine: { u: 0.55, v: 0.36 },
-      grip: { u: 0.32, v: 0.36 },
+      scope: { u: 0.5, v: 0.74 },
+      barrel: {},
+      // 0.55 sat at the front lip of the grip cut; the flat shelf is behind it.
+      magazine: { u: 0.45, v: 0.36 },
+      grip: { u: 0.38, v: 0.36 },
     },
-    muzzle: { v: 0.52 },
   },
   {
     id: "longcoil",
@@ -184,10 +187,10 @@ export const WEAPONS: WeaponDef[] = [
     soundUrl: `${MINT}/sfx-longcoil/audio_file.mp3`,
     displayLength: 2.7,
     stats: { damage: 100, fireRate: 12, range: 100, stability: 48, chargeSpeed: 34 },
+    // No stock bay: the frame already carries a full stock with a cheek riser.
     slots: {
-      scope: { u: 0.52, v: 0.72, sizeScale: 1.1 },
-      barrel: { u: 0.06, v: 0.56 },
-      stock: { u: 0.9, v: 0.52 },
+      scope: { u: 0.52, v: 0.72 },
+      barrel: {},
     },
   },
   {
@@ -207,7 +210,6 @@ export const WEAPONS: WeaponDef[] = [
     slots: {
       scope: { u: 0.5, v: 0.72 },
     },
-    muzzle: { v: 0.62 },
   },
 ];
 
@@ -217,7 +219,9 @@ export const ATTACHMENTS: AttachmentDef[] = [
     name: "Holo Scope",
     slot: "scope",
     modelUrl: `${ATTACH_PACK}-0-ks75dye1rkxe9hs6b9b6d6gygx8c1w30.glb`,
-    relativeSize: 0.24,
+    // Sized against the frames' depth, not their length: at 0.24 this optic was
+    // wider than the Longcoil it sat on.
+    relativeSize: 0.14,
     modifiers: { range: 18, chargeSpeed: -5 },
     blurb: "Holographic optic. Sharper reach, slower spin-up.",
   },
@@ -226,7 +230,8 @@ export const ATTACHMENTS: AttachmentDef[] = [
     name: "Emitter Extension",
     slot: "barrel",
     modelUrl: `${ATTACH_PACK}-1-ks73a9cpn966a4qgeatsrzygnd8c01qd.glb`,
-    relativeSize: 0.34,
+    // Was a 0.235-thick sleeve on a 0.055-diameter emitter tube.
+    relativeSize: 0.22,
     modifiers: { range: 12, damage: 8, fireRate: -10 },
     blurb: "Longer beam column. Hits harder, cycles slower.",
   },
