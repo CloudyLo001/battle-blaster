@@ -218,6 +218,7 @@ export class Showcase {
   private probeRay = new THREE.Raycaster();
 
   private static readonly SEAT_PATCH_U = 0.03;
+  private static readonly SEAT_PATCH_V = 0.08;
   private static readonly SEAT_PATCH_W = 0.1;
   private static readonly TIP_SLAB = 0.02;
   private static readonly SEAT_INSET = 0.05;
@@ -833,10 +834,14 @@ export class Showcase {
   }
 
   /**
-   * Rays back along the frame axis at an authored height, to find the end
-   * surface at that height rather than the extreme end of the whole model.
-   * Three rays across the depth, taking the outward-most hit, so one ray
-   * slipping through a gap in the shell cannot decide the seat.
+   * Rays back along the frame axis around an authored height, to find the end
+   * surface there rather than the extreme end of the whole model.
+   *
+   * Samples a 3x3 patch and keeps the outward-most hit. The spread matters: an
+   * emitter mouth is a hole, so a ray aimed at the middle of it travels down
+   * the bore and reports a surface a long way inside. Neighbours that land on
+   * the surrounding rim win, which is the plane the module should butt against.
+   * The returned seat keeps the authored height — only the depth is measured.
    */
   private tipSeatAtHeight(
     body: THREE.Object3D,
@@ -848,21 +853,31 @@ export class Showcase {
     const forward = direction.x < 0;
     const y = bounds.min.y + (spec.v ?? 0.5) * size.y;
     const z = bounds.min.z + (spec.w ?? 0.5) * size.z;
+    const dy = Showcase.SEAT_PATCH_V * size.y;
     const dz = Showcase.SEAT_PATCH_W * size.z;
     const startX = forward ? bounds.min.x - size.x : bounds.max.x + size.x;
     const inward = direction.clone().negate();
 
     let best: number | null = null;
     let hits = 0;
-    for (let j = -1; j <= 1; j += 1) {
-      this.probeRay.set(new THREE.Vector3(startX, y, z + j * dz), inward);
-      const found = this.probeRay.intersectObject(body, true);
-      if (found.length === 0) continue;
-      hits += 1;
-      const x = found[0].point.x;
-      if (best === null || (forward ? x < best : x > best)) best = x;
+    for (let i = -1; i <= 1; i += 1) {
+      for (let j = -1; j <= 1; j += 1) {
+        this.probeRay.set(new THREE.Vector3(startX, y + i * dy, z + j * dz), inward);
+        const found = this.probeRay.intersectObject(body, true);
+        if (found.length === 0) continue;
+        hits += 1;
+        const x = found[0].point.x;
+        if (best === null || (forward ? x < best : x > best)) best = x;
+      }
     }
     if (hits < 2 || best === null) return null;
+
+    // A wide aperture can swallow the whole patch — every ray travels down the
+    // bore and reports a surface deep inside. When the result is far behind the
+    // frame's end face, the rim is what the module should meet, so use the face
+    // plane at the authored height instead.
+    const faceX = forward ? bounds.min.x : bounds.max.x;
+    if (Math.abs(best - faceX) > 0.1 * size.x) best = faceX;
     return new THREE.Vector3(best, y, z);
   }
 

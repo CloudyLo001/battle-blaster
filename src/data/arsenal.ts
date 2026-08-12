@@ -173,8 +173,10 @@ export const WEAPONS: WeaponDef[] = [
     slots: {
       scope: { u: 0.5, v: 0.74 },
       // The muzzle face carries a bore ring and a canister ring with a hollow
-      // gap between; without this the seat lands in the gap, on neither.
-      barrel: { v: 0.47 },
+      // gap between, so a whole-face centre lands in the gap on neither. 0.57
+      // is the middle of the bore aperture, measured as the band where rays
+      // pass into the barrel (v 0.464 to 0.679) rather than striking the rim.
+      barrel: { v: 0.57 },
       // 0.55 sat at the front lip of the grip cut; the flat shelf is behind it.
       magazine: { u: 0.45, v: 0.36 },
       grip: { u: 0.38, v: 0.36 },
